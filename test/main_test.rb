@@ -1,4 +1,3 @@
-
 gem 'test-unit', '>= 2'
 
 require 'test/unit'
@@ -30,5 +29,6 @@ class RpegTest < Test::Unit::TestCase
     assert_equal "<nt:12 ><code:`34`>", renderer.render("12 `34`")
     assert_equal "<nt:12 ><code:`34`><nt: 56>", renderer.render("12 `34` 56")
     #assert_equal "<nt:fuga>", renderer.render("fuga")
+    assert_equal "<t:fuga>", renderer.render("fuga")
   end
 end
