@@ -25,7 +25,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard"
   spec.add_development_dependency "guard-bundler"
   spec.add_development_dependency "guard-rake"
-  spec.add_development_dependency "guard-test"
+  #spec.add_development_dependency "guard-test"
+  spec.add_development_dependency "guard-shell"
 
   spec.add_development_dependency "growl"
 end
