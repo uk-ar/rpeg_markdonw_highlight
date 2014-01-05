@@ -31,8 +31,9 @@ describe RpegMarkdownHighlight::Renderer do
   end
 
   it "render2" do
-    #renderer = RpegMarkdownHighlight::Renderer.new
-    #markdown.text{}.code{}.to_markdown
+    markdown = RpegMarkdownHighlight::Markdown.new("12 `34`")
+    expect(markdown.render).to eq ["12 ", "`34`"]
+    #markdown.text{}.code{}.text{}.to_markdown
   end
 
 end
