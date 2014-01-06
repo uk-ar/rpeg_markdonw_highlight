@@ -32,8 +32,34 @@ describe RpegMarkdownHighlight::Renderer do
 
   it "render2" do
     markdown = RpegMarkdownHighlight::Markdown.new("12 `34`")
-    expect(markdown.render).to eq ["12 ", "`34`"]
+    #expect(markdown.render).to eq ["12 ", "`34`"]
+    expect(markdown.elements).to eq [{:type => :not_code, :string => "12 "},
+                                   {:type => :code , :string => "`34`"}]
+    expect(markdown.on_code{ |s| "<c:#{s}>"}.elements).
+      to eq [{:type => :not_code, :string => "12 "},
+             {:type => :code , :string => "<c:`34`>"}]
+    markdown = RpegMarkdownHighlight::Markdown.new("12 `34`")
+    expect(markdown.on_code{ |s| "<c:#{s}>"}.to_markdown).
+      to eq "12 <c:`34`>"
     #markdown.text{}.code{}.text{}.to_markdown
   end
 
+  it "render3" do
+    markdown = RpegMarkdownHighlight::Markdown.new("`34` 12")
+    #expect(markdown.render).to eq ["`34`", " 12"]
+    expect(markdown.elements).to eq [{:type => :code , :string => "`34`"},
+                                     {:type => :not_code, :string => " 12"}]
+    expect(markdown.on_not_code{ |s| "<nc:#{s}>"}.elements).
+      to eq [{:type => :code , :string => "`34`"},
+             {:type => :not_code, :string => "<nc: 12>"}]
+    # expect(markdown.on_not_code{ |s| "foo ```bar``` baz"}.elements).
+    #   to eq [{:type => :code , :string => "`34`"},
+    #          {:type => :not_code, :string => "<nc: 12>"}]
+    # expect(markdown.on_not_code{ |s| "foo ```bar```"}.elements).
+    #   to eq [{:type => :code , :string => "`34`"},
+    #          {:type => :not_code, :string => "<nc: 12>"}]
+    # expect(markdown.on_not_code{ |s| "```bar``` baz"}.elements).
+    #   to eq [{:type => :code , :string => "`34`"},
+    #          {:type => :not_code, :string => "<nc: 12>"}]
+  end
 end

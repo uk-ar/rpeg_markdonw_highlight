@@ -55,10 +55,10 @@ static VALUE rb_renderer_render(VALUE self, VALUE text)
   return string;
 }
 
-static VALUE rb_markdown_render(VALUE self)
+static VALUE rb_markdown_render(VALUE self, VALUE text)
 {
   /* grab char pointer to markdown input text */
-  VALUE text = rb_funcall(self, rb_intern("text"), 0);
+  //VALUE text = rb_funcall(self, rb_intern("text"), 0);
   Check_Type(text, T_STRING);
 
   pmh_element **elem;
@@ -70,33 +70,46 @@ static VALUE rb_markdown_render(VALUE self)
   VALUE array;
   array = rb_ary_new();
   unsigned long pos = 0;
+  VALUE tmp_string;
+  VALUE tmp_hash;
 
   while (cursor != NULL)
     {
-      VALUE tmp_v;
-      // normal
-      tmp_v = rb_str_new(RSTRING_PTR(text) + pos, cursor->pos);
-      //tmp_v = rb_funcall(self, id_normal_text, 1, tmp_v);
-      //rb_str_cat2(string, RSTRING_PTR(tmp_v));
-      rb_ary_push(array, tmp_v);
+      tmp_hash = rb_hash_new();
+      if(cursor->pos != 0){
+       // normal
+       tmp_string = rb_str_new(RSTRING_PTR(text) + pos, cursor->pos);
+       //tmp_v = rb_funcall(self, id_normal_text, 1, tmp_v);
+       //rb_str_cat2(string, RSTRING_PTR(tmp_v));
+       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("type")), ID2SYM(rb_intern("not_code")));
+       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("string")), tmp_string);
+       rb_ary_push(array, tmp_hash);
+      }
       // code
-      tmp_v = rb_str_new(RSTRING_PTR(text) + cursor->pos,
+      tmp_string = rb_str_new(RSTRING_PTR(text) + cursor->pos,
                          cursor->end - cursor->pos);
       //tmp_v = rb_funcall(self, id_code, 1, tmp_v);
       //rb_str_cat2(string, RSTRING_PTR(tmp_v));
-      rb_ary_push(array, tmp_v);
+      tmp_hash = rb_hash_new();
+      rb_hash_aset(tmp_hash, ID2SYM(rb_intern("type")), ID2SYM(rb_intern("code")));
+      rb_hash_aset(tmp_hash, ID2SYM(rb_intern("string")), tmp_string);
+      rb_ary_push(array, tmp_hash);
 
       pos = cursor->end;
       cursor = cursor->next;
     }
   if (pos < RSTRING_LEN(text)){
     // normal
-    VALUE tmp_v;
-    tmp_v = rb_str_new(RSTRING_PTR(text) + pos, RSTRING_LEN(text) - pos);
+    VALUE tmp_string;
+    VALUE tmp_hash = rb_hash_new();
+    tmp_string = rb_str_new(RSTRING_PTR(text) + pos, RSTRING_LEN(text) - pos);
     /* tmp_v = rb_str_new(RSTRING_PTR(text) + pos, cursor->pos); */
     //tmp_v = rb_funcall(self, id_normal_text, 1, tmp_v);
     //rb_str_cat2(string, RSTRING_PTR(tmp_v));
-    rb_ary_push(array, tmp_v);
+    rb_hash_aset(tmp_hash, ID2SYM(rb_intern("type")), ID2SYM(rb_intern("not_code")));
+    rb_hash_aset(tmp_hash, ID2SYM(rb_intern("string")), tmp_string);
+
+    rb_ary_push(array, tmp_hash);
   }
   return array;
 }
@@ -138,7 +151,7 @@ void Init_rpeg_markdown_highlight()
   //rb_const_get(
   //rb_intern("RpegMarkdownHighlight::"));
   rb_define_method(renderer_class, "render", rb_renderer_render, 1);
-  rb_define_method(markdown_class, "render", rb_markdown_render, 0);
+  rb_define_private_method(markdown_class, "_render", rb_markdown_render, 1);
   /* rb_define_private_method(element_class, "initialize", */
   /*                          rb_element_initialize, 1); */
 }

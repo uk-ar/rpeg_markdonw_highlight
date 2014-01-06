@@ -10,14 +10,32 @@ module RpegMarkdownHighlight
       text
     end
   end
+  #todo render to module method
   class Markdown
-    attr_reader :text
+    attr_reader :elements
     def initialize(text)
-      @text = text
+      # @text = text
+      #self._render
+      @elements = _render(text)
     end
-    # def code
-    # end
+    def on_code
+      @elements = elements.map do |item|
+        item[:string] = yield item[:string] if item[:type] == :code
+        item
+      end
+      self
+    end
+    def on_not_code
+      @elements = elements.map do |item|
+        item[:string] = yield item[:string] if item[:type] == :not_code
+        item
+      end
+      self
+    end
+    def to_markdown
+      elements.map{ |item| item[:string]}.join
+    end
   end
-  class Element
-  end
+  # class Element
+  # end
 end
