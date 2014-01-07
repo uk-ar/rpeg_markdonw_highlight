@@ -114,26 +114,46 @@ static VALUE rb_markdown_render(VALUE self, VALUE text)
   return array;
 }
 
-/* static VALUE rb_element_initialize(VALUE self, VALUE text) */
-/* { */
-/*   Check_Type(text, T_STRING); */
+const char* elemNames[] = {"LINK", "AUTO_LINK_URL", "AUTO_LINK_EMAIL", "IMAGE", "CODE", "HTML", "HTML_ENTITY", "EMPH", "STRONG", "LIST_BULLET", "LIST_ENUMERATOR", "COMMENT", "H1", "H2", "H3", "H4", "H5", "H6", "BLOCKQUOTE", "VERBATIM", "HTMLBLOCK", "HRULE", "REFERENCE", "NOTE", "RAW_LIST", "RAW", "EXTRA_TEXT", "SEPARATOR", "NO_TYPE", "ALL"};
 
-/*   pmh_element **elem; */
-/*   pmh_markdown_to_elements(RSTRING_PTR(text), pmh_EXT_NONE, &elem); */
-/*   pmh_sort_elements_by_pos(elem); */
-/* } */
-/* void rb_element_free(pmh_element *elem){ */
-/*   pmh_element_free(&elem); */
-/* } */
+static VALUE rb_markdown_to_elements(VALUE self, VALUE text)
+{
+  /* grab char pointer to markdown input text */
+  Check_Type(text, T_STRING);
 
-/* static VALUE rb_element_alloc(VALUE klass) */
-/* { */
-/*   pmh_element *elem = ALLOC(pmh_element); */
-/*   return Data_Wrap_Struct(klass, 0, rb_element_free, elem); */
-/*   //return Data_Wrap_Struct(klass, 0, -1, elem); */
-/*   /\* pmh_markdown_to_elements(RSTRING_PTR(text), pmh_EXT_NONE, &elem); *\/ */
-/*   /\* pmh_sort_elements_by_pos(elem); *\/ */
-/* } */
+  pmh_element **elem;
+  pmh_markdown_to_elements(RSTRING_PTR(text), pmh_EXT_NONE, &elem);
+  pmh_sort_elements_by_pos(elem);
+
+  VALUE hash;
+  hash = rb_hash_new();
+  //unsigned long pos = 0;
+
+  pmh_element *cursor;
+  for(int i = pmh_LINK; i <= pmh_NOTE; i++){
+    cursor = elem[i];
+    VALUE array;
+    array = rb_ary_new();
+    while (cursor != NULL){
+      VALUE tmp_hash;
+      tmp_hash = rb_hash_new();
+  /*     // normal */
+  /*     //tmp_string = rb_str_new(RSTRING_PTR(text) + pos, cursor->pos); */
+      rb_hash_aset(tmp_hash, ID2SYM(rb_intern("type")), ID2SYM(rb_intern(elemNames[i])));
+  /*     rb_hash_aset(tmp_hash, ID2SYM(rb_intern("pos")), ULONG2NUM(cursor->pos)); */
+  /*     rb_hash_aset(tmp_hash, ID2SYM(rb_intern("end")), ULONG2NUM(cursor->end)); */
+  /*     rb_hash_aset(tmp_hash, ID2SYM(rb_intern("label")),rb_str_new2(cursor->label)); */
+  /*     rb_hash_aset(tmp_hash, ID2SYM(rb_intern("address")),rb_str_new2(cursor->label)); */
+  /*     //rb_hash_aset(tmp_hash, ID2SYM(rb_intern("string")), ID2SYM(rb_intern(h))); */
+      rb_ary_push(array, rb_str_new2("hoge"));
+  /*     /\* pos = cursor->end; *\/ */
+      cursor = cursor->next;
+    }
+    rb_hash_aset(hash, ID2SYM(rb_intern(elemNames[i])), array);
+  }
+  pmh_free_elements(elem);
+  return hash;
+}
 
 void Init_rpeg_markdown_highlight()
 {
@@ -143,8 +163,8 @@ void Init_rpeg_markdown_highlight()
   VALUE element_class;
 
   module = rb_define_module("RpegMarkdownHighlight");
-  //rb_define_module_function(module, "hello", wrap_hello, 0);
-
+  rb_define_module_function(module, "to_elements",
+                            rb_markdown_to_elements, 1);
   renderer_class = rb_define_class_under(module, "Renderer", rb_cObject);
   markdown_class = rb_define_class_under(module, "Markdown", rb_cObject);
   //element_class = rb_define_class_under(module, "Element", rb_cObject);

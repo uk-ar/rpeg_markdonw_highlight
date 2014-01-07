@@ -4,5 +4,5 @@ source 'https://rubygems.org'
 gemspec
 group :development, :test do
   #gem 'guard-rspec', :path => '~/guard-rspec'
-  gem 'guard-rspec', :github => 'uk-ar/guard-rspec'
+  gem 'guard-rspec', :github => 'uk-ar/guard-rspec', :branch => "add_emacs_option", require: false
 end

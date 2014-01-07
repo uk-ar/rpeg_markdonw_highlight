@@ -8,14 +8,8 @@ task :default => [:test]
 Rake::ExtensionTask.new('rpeg_markdown_highlight')
 
 # Testing
-require 'rake/testtask'
+require "rspec/core/rake_task"
 
-Rake::TestTask.new do |t|
-  t.libs << 'lib'
-  t.libs << 'test'
-  t.pattern = 'test/*_test.rb'
-  #t.verbose = true
-  #t.warning = false
-end
-
-task 'test' => :compile
+RSpec::Core::RakeTask.new("spec")
+task :default => :spec
+task :spec => :compile
