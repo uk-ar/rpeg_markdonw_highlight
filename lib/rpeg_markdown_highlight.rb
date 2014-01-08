@@ -12,29 +12,42 @@ module RpegMarkdownHighlight
   end
   #todo render to module method
   class Markdown
-    attr_reader :elements
+    include RpegMarkdownHighlight
+    attr_reader :text
     def initialize(text)
-      # @text = text
+      @text = text
       #self._render
-      @elements = _render(text)
+      # @elements = _render(text)
+    end
+    def elements
+      to_elements(text)
     end
     def on_code
-      @elements = elements.map do |item|
-        item[:string] = yield item[:string] if item[:type] == :code
-        item
-      end
+      return self if elements[:code].empty?
+      old_pos = 0
+      @text = elements[:code].map do |item|
+        not_code = @text.slice(old_pos...(item[:pos])) unless
+          item[:pos] == 0
+        code = yield(@text.slice(item[:pos]...item[:end]))
+        old_pos = item[:end]
+        [not_code, code]
+      end.push(unless old_pos == text.length then @text.slice(old_pos, text.length) end).flatten.join
       self
     end
     def on_not_code
-      @elements = elements.map do |item|
-        item[:string] = yield item[:string] if item[:type] == :not_code
-        item
-      end
+      old_pos = 0
+      @text = elements[:code].map do |item|
+        not_code = yield(@text.slice(old_pos...(item[:pos]))) unless
+          item[:pos] == 0
+        code = @text.slice(item[:pos]...item[:end])
+        old_pos = item[:end]
+        [not_code, code]
+      end.push(unless old_pos == text.length then yield(@text.slice(old_pos, text.length)) end).flatten.join
       self
     end
-    def to_markdown
-      elements.map{ |item| item[:string]}.join
-    end
+    # def to_markdown
+    #   elements.map{ |item| item[:string]}.join
+    # end
   end
   # class Element
   # end
