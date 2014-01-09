@@ -16,38 +16,27 @@ module RpegMarkdownHighlight
     attr_reader :text
     def initialize(text)
       @text = text
-      #self._render
-      # @elements = _render(text)
     end
-    def elements
-      to_elements(text)
+    def _make_array(target)
+      old_pos = 0
+      string_assoc = to_elements(text)[target].map do |item|
+        not_element = [false, @text.slice(old_pos...(item[:pos]))] unless item[:pos] == 0
+        element = [true,@text.slice(item[:pos]...item[:end])]
+        old_pos = item[:end]
+        [not_element, element]
+      end.flatten(1).compact
+      string_assoc.push([false, @text.slice(old_pos, text.length)]) unless old_pos == text.length
+      string_assoc
     end
     def on_code
-      return self if elements[:code].empty?
-      old_pos = 0
-      @text = elements[:code].map do |item|
-        not_code = @text.slice(old_pos...(item[:pos])) unless
-          item[:pos] == 0
-        code = yield(@text.slice(item[:pos]...item[:end]))
-        old_pos = item[:end]
-        [not_code, code]
-      end.push(unless old_pos == text.length then @text.slice(old_pos, text.length) end).flatten.join
-      self
+      Markdown.new(_make_array(:code).map{|cond,string| cond ? yield(string) : string }.join)
     end
     def on_not_code
-      old_pos = 0
-      @text = elements[:code].map do |item|
-        not_code = yield(@text.slice(old_pos...(item[:pos]))) unless
-          item[:pos] == 0
-        code = @text.slice(item[:pos]...item[:end])
-        old_pos = item[:end]
-        [not_code, code]
-      end.push(unless old_pos == text.length then yield(@text.slice(old_pos, text.length)) end).flatten.join
-      self
+      Markdown.new(_make_array(:code).map{|cond,string| !cond ? yield(string) : string }.join)
     end
-    # def to_markdown
-    #   elements.map{ |item| item[:string]}.join
-    # end
+    def on_link
+      Markdown.new(_make_array(:link).map{|cond,string| cond ? yield(string) : string }.join)
+    end
   end
   # class Element
   # end

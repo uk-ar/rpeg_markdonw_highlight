@@ -28,8 +28,12 @@ static VALUE rb_markdown_to_elements(VALUE self, VALUE text)
       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("type")), ID2SYM(rb_intern(elemNames[i])));
       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("pos")), ULONG2NUM(cursor->pos));
       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("end")), ULONG2NUM(cursor->end));
-      /* rb_hash_aset(tmp_hash, ID2SYM(rb_intern("label")),rb_str_new2(cursor->label)); */
-      /* rb_hash_aset(tmp_hash, ID2SYM(rb_intern("address")),rb_str_new2(cursor->label)); */
+      if(cursor->label!=NULL){
+       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("label")),rb_str_new2(cursor->label));
+      }
+      if(cursor->address!=NULL){
+       rb_hash_aset(tmp_hash, ID2SYM(rb_intern("address")),rb_str_new2(cursor->address));
+      }
       rb_ary_push(array, tmp_hash);
       cursor = cursor->next;
     }
